@@ -1,0 +1,2 @@
+# NakaBot
+Nakamandem Bot folder
