@@ -6,13 +6,9 @@ var auth =  require('./auth.json');
 var request = require('request');
 var cheerio = require('cheerio');
 var insult = require('./deadinsults.json');
-var nakaServerID=  "170058625329397760"
-var dankServerID = "389537084102410241"
 //  var botInfo = ('./package.json');
 var rndNumForIQuotes ;
-var hChannelID = "282674503618789378"; // id for 'h' channel in Nakamandem discord
 var tmpQuote;
-var quoteChnlID = "267830443183702026";
 var dilim = "\"";
 var commandList = ['ping(replies pong)',
                    'info(bot information)', 'stressed(replies "fuck you {user name} "")',
@@ -23,7 +19,6 @@ var commandList = ['ping(replies pong)',
 var team1 = [ ];
 var team2 = [ ];
 var removed ;
-var voiceID= "574235518192189440";
 var nakaVoiceChannelIDs = [];
 var dankVoiceChannelIDS = [];
 var openTimeData;
