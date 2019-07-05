@@ -1,0 +1,33 @@
+{
+  "name": "nakabot",
+  "version": "1.0.0",
+  "description": "Nakamandem Bot folder",
+  "main": "bot.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {
+    "auth": "^0.0.9",
+    "cheerio": "^1.0.0-rc.3",
+    "discord.io": "github:woor/discord.io#gateway_v6",
+    "discord.js": "^11.5.1",
+    "ffmpeg-binaries": "^4.0.0",
+    "opusscript": "^0.0.6",
+    "request": "^2.88.0",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/T-Gordon/Nakabotrep.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/T-Gordon/Nakabotrep/issues"
+  },
+  "homepage": "https://github.com/T-Gordon/Nakabotrep#readme"
+}
