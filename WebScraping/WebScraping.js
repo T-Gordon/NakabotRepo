@@ -1,48 +1,39 @@
 const request = require('request');
 const cheerio = require('cheerio');
-//const charac
-var patchNotes = { "itemName":"",
-                   "Move":
-                      {"moveName": " ",
-                        "patchNote": []
-                      }
-                  };
-var gameName =  " ";
-//var test = { "dragonballFighters" :[]};
-var itemName;
-var moveName;
-var patch_note;
-var temptext;
-var num = 0;
-var obj;
-var test;
-var temp= [];
-//var temp1 = [];
-//var temp2 = [];
-request('https://www.redbull.com/gb-en/projects/gaming-sphere/sphere-opening-times', (error,
-    response, html) => {
-    if (!error && response.statusCode == 200) {
+const fs = require('fs');
+const filePath = "C:\\Users\\damia\\Documents\\programming\\bots\\Nakabot\\information\\redBull\\openingTimes"
 
-      const $ = cheerio.load(html);
-      const openingTimeTable = $('.data-table__table-body');
-         openingTimeTable.find('tr').each( function(i, elem){
-           test  =  $(this).find('.data-table__column-data').text()
-          // console.log(test);
-           temp.push(test);
-           console.log("pushed too temp, new length: " + temp.length);
-        })
-        console.log(temp.length);
-        for(let obj of temp)
-        {
-          console.log(obj);
-        //  console.log("mard")
-        }
-      //  console.log(test)
-        console.log("scraping complete")
+let openTimeArr = []
+module.exports = function openingTimesScraper (){
+  request('https://www.redbull.com/gb-en/projects/gaming-sphere/sphere-opening-times', (error,
+      response, html) => {
+      if (!error && response.statusCode == 200) {
+        console.log("yo yo")
+        const $ = cheerio.load(html);
+        const openingTimeTable = $('.caption-and-content-layout');
 
-    }
-    else
-    {
-      return console.error(error);
-    }
-});
+              openingTimeTable.find('span').each(function findTimes(i,elem){
+
+               openTimeArr[i] = $(this).text();
+
+             });
+            // console.log(openTimeOb.openTime);
+            // openTimeArr.push(openTimeOb);
+          //   console.log("pushed too temp, new length: " + openTimeArr.length);
+
+          try{
+            fs.writeFile(filePath, JSON.stringify(openTimeArr))
+          }catch(err){
+            console.error(err);
+          }
+        //  console.log(temp.length);
+          return console.log("scraping complete");
+
+      }
+      else
+      {
+        return console.error(error);
+      }
+  });
+
+}

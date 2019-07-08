@@ -1,37 +1,52 @@
 "use strict"
+//----- modules used
 const fs = require("fs");
-var Discord = require('discord.io');
+const path = require("path");
+var Discord = require('discord.js');
 var winston = require('winston'); // winston is a custom made library
 var auth =  require('./auth.json');
 var request = require('request');
 var cheerio = require('cheerio');
-var insult = require('./deadinsults.json');
-//  var botInfo = ('./package.json');
+var rbOpenTimes = require('./WebScraping\\WebScraping.js')
+//------- Json files)
+var insults = require('./deadinsults.json');
+var commandList =require('./botCommands.json');
+var botInfo = require('./package.json');
 var rndNumForIQuotes ;
 var tmpQuote;
 var dilim = "\"";
-var commandList = ['ping(replies pong)',
-                   'info(bot information)', 'stressed(replies "fuck you {user name} "")',
-                   'Quote(random quote form nakaquotes channel)',
-                   'commands(list of commands)','insults [name/menton](sends random isult to mention/text)',
-                   'league sort name1 name2 nameN (randomise the list of names into 2 even teams(odd on one team, if odd num of team members))',
-                   'bannedlist [strain name] (adds the given strain to a list of banned strains.\n If no strain name is detected sends a list of strains)'];
-var team1 = [ ];
-var team2 = [ ];
-var removed ;
-var nakaVoiceChannelIDs = [];
-var dankVoiceChannelIDS = [];
+var teamSort1 = [ ];
+var teamSort2 = [ ];
+var removed;
+var nakaVoiceChannelIDs = auth.IDs;
+var dankVoiceChannelIDS = auth.IDs;
 var openTimeData;
 var openTimeArr = [];
+var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 // code used to configure logger settings
 const logger =  winston.createLogger({
-  transports:[new winston.transports.Console()],
+  transports:
+  new winston.transports.Console(),
   format: winston.format.combine(
     winston.format.colorize({all:true}),
     winston.format.simple()
   )
 });
+var day = new Date();
+const logFiledir = "logs\\errorLogs: " + days[day.getUTCDay()] + " " + day.getUTCFullYear();
 
+fs.appendFile(logFiledir,day +" Logs" , function er(err){
+  if(err)throw err;
+  console.log('File Created');
+})
+const errorLogger = winston.createLogger({
+    transports:[
+      new winston.transports.Console(),
+      new winston.transports.File({filename: logFiledir})
+   ]
+})
+logger.log('error', "Updated")
 /*logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console,{
   colorize : true
@@ -39,164 +54,92 @@ logger.add(logger.transports.Console,{
 logger.level = 'debug';
 
 // initialize discord bot
-var bot = new Discord.Client ({
-  token: auth.token,
-  autorun: true
-});
+
+var bot = new Discord.Client();
+bot.login(auth.token)
 bot.on('ready' , function () {
   logger.info('Connected');
   logger.info('logged in as: ');
-  logger.info(bot.username + ' - (' + bot.id +')');
+  logger.info(botInfo.name + ' - (' + botInfo.version +')');
+  errorLogger.info('error',botInfo.name + ' - (' + botInfo.version +')');
+  rbOpenTimes();
    console.log("bot on")
    //--- gets all the vocie channel IDs for Nakamandem discord
-   for(var voicechn in bot.channels )
-   {
-        if(bot.channels[voicechn].type === 2)
-      {
-        nakaVoiceChannelIDs.push(bot.channels[voicechn].id);
-        console.log("voice added");
-      }
-   }
-   //=-================= websxcraping
-   //--- redbull Opening times
-   request('https://www.redbull.com/gb-en/projects/gaming-sphere/sphere-opening-times', (error,
-       response, html) => {
-       if (!error && response.statusCode == 200) {
 
-         const $ = cheerio.load(html);
-         const openingTimeTable = $('.data-table__table-body');
-            openingTimeTable.find('tr').each( function(i, elem){
-             openTimeData  =  $(this).find('.data-table__column-data').text()
-             // console.log(test);
-              openTimeArr.push(openTimeData);
-              console.log("New item pushed to array, new length: " + openTimeArr.length);
-           })
-           console.log(openTimeArr.length);
-           for(let obj of openTimeArr)
-           {
-             console.log(obj);
-           //  console.log("mard")
-           }
-         //  console.log(test)
-           console.log("scraping complete")
-
-       }
-       else
-       {
-         return console.error(error);
-       }
-   });
 });
 bot.on('disconnect', function(errMsg, code) {
     console.log(`Disconnected from Discord. Error Code ${code}. Message ${errMsg}.`)
     bot.connect();
 })
+
 //=== TODO: add a fuction to edit user messages in the h channel for Nakamandem to h no matter what is said
-bot.on('message', function (user, userID , chnl_ID, message, event){
-  //====== checks for messages other than h in h channel (includes capital H)
-  var tempChar = message.substring(0,1)
-  var messID = event.d.id;
+function joinVChannel(userID){
+  for(var voicechn in bot.channels )
+  {
+       if(bot.channels[voicechn].type === 2 && bot.channels[voicechn].type === bot.member[userID].voice_channel_id )
+     {
 
-if(message.substring(0,1) === '?' && message.substring(1,1) !== '?' && message.length != 1){
-  var args = message.substring(1).split(' ');
-  var cmd = args[0];
-  var rndNum = Math.floor((Math.random()*12) + 0);
-  var tmpName;
-  // cases used to hold the information for the execution statments
-  args = args.splice(1);
-  cmd = cmd.toLowerCase();
-//  var personId = ("<@"+ nakaIDs.nakaUserIDs[rndNum] +">");
-  switch(cmd){
-    //== a simple ping pong command
-    case 'ping':
-
-    console.log("pong");
-    bot.sendMessage({
-      to: chnl_ID,
-      message : 'pong'
-    });
-    break;
-    case 'info':
-    //=== bot info
-    bot.sendMessage({
-      to:chnl_ID,
-      message: botInfo
-    });
-    break;
-    case 'commands':
-    //====== gives list of commands
-        bot.sendMessage({
-        to:chnl_ID,
-        message: ' place ? infront of command' ,
-        message :   commandList[i]
-
-      });
-      break;
-      case 'redbull' :
-      for(var i = 0 ; i < openTimeArr.length ; i++)
-      {
-        bot.sendMessage({to:chnl_ID,
-                         message: openTimeArr[i]})
-        //console.log(obj);
-      //  console.log("mard")
-      }
-
-      break;
-    case 'spotify' :
-        //voiceID = bot.members[userID];
-          console.log(bot.channels[chnl_ID].members[userID].voice_channel_id);
-
-            bot.joinVoiceChannel(voiceID, function(err, events) {
-              if (err)
-                {
-                  console.log("no Channel ID found")
-                  bot.sendMessage({to:chnl_ID,
-                                   message:'Please join a voice channel'
-                                 })
-                  return  console.error(err);
-                }
-                bot.sendMessage({to:chnl_ID,
-                                 message: "Connected to: " + bot.channels[voiceID].name})
-                console.log("mi deya");
-              });
-
-         break;
-    case 'stopMusic':
-        break;
-    case 'pause' :
-      break;
-    case 'skip' :
-    break ;
-    case 'leave' :
-        bot.leaveVoiceChannel(voiceID, function(err, events){
-          if(err)
-          {
-            bot.sendMessage({to:chnl_ID,
-                             message: "Not connected to a Voice Channel"})
-                             return console.error(err);
-          }
+       console.log("we've got a match");
+     }
+     else {
+       console.log("im baffled: " + bot.member[userID].voice_channel_id)
+     }
+  }
+    bot.joinVoiceChannel(voiceID, function(err, events) {
+      if (err)
+        {
+          console.log("no Channel ID found")
           bot.sendMessage({to:chnl_ID,
-                           message: "Disconnected from: " + bot.channels[voiceID].name})
+                           message:'Please join a voice channel'
+                         })
+          return  console.error(err);
+        }
+        bot.sendMessage({to:chnl_ID,
+                         message: "Connected to: " + bot.channels[voiceID].name})
+        console.log("mi deya");
+      });
+}
+bot.on('message', message => {
+  var prefix = message.content.substring(0,1);
+  if(prefix === '?' && message.content.length > 1)
+    {
+      var fullMessage = message.content.substring(1).split(' ');
+      var cmd = fullMessage[0].toLowerCase();
+      var rndNum = Math.floor((Math.random()*12) + 0);
+      var tmpName;
+  // cases used to hold the information for the execution statments
+    //cmd = cmd.toLowerCase();
+//  var personId = ("<@"+ nakaIDs.nakaUserIDs[rndNum] +">");
+    switch(cmd){
+    //== a simple ping pong command
+          case 'ping':
 
-        });
-        break;
-    case 'framedata' :
+            console.log("pong");
+            message.channel.send('pong');
+            break;
+          case 'info':
+          //=== bot info
+            message.channel.send("Bot Name: " + botInfo.name + "\n"+
+                                "Bot Version: " + botInfo.version)
+            break;
+          case 'commands':
+          //====== gives list of commands
+            message.channel.send(commandList.commands)
+            break;
+          case 'redbull' :
+            message.channel.send("TO:do no info found")
+            message.channel.send("Never been updated ")
+            break;
+          case 'spotify' :
 
-        break;
-        case 'characterdetails' :
+            break;
+          case 'stopMusic':
 
-        break;
+          case 'leave' :
 
-   case 'quotessssssdsssss':
-    break;
-        case 'teamSort' :
-
-          break;
+            break;
           default :
-          bot.sendMessage({
-            to:chnl_ID,
-            message: 'invalid input'
-          });
+          console.log("invalid input")
           break;
           //====== if no input is detected
         }

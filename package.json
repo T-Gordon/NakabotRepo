@@ -12,7 +12,7 @@
     "discord.io": "github:woor/discord.io#gateway_v6",
     "discord.js": "^11.5.1",
     "ffmpeg-binaries": "^4.0.0",
-    "opusscript": "^0.0.6",
+    "opusscript": "0.0.6",
     "request": "^2.88.0",
     "winston": "^3.2.1"
   },
