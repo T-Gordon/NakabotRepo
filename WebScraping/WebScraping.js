@@ -8,7 +8,7 @@ module.exports = function openingTimesScraper (){
   request('https://www.redbull.com/gb-en/projects/gaming-sphere/sphere-opening-times', (error,
       response, html) => {
       if (!error && response.statusCode == 200) {
-        console.log("yo yo")
+
         const $ = cheerio.load(html);
         const openingTimeTable = $('.caption-and-content-layout');
 

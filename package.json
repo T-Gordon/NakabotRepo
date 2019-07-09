@@ -11,6 +11,7 @@
     "cheerio": "^1.0.0-rc.3",
     "discord.io": "github:woor/discord.io#gateway_v6",
     "discord.js": "^11.5.1",
+    "discord.js-commando": "^0.10.0",
     "ffmpeg-binaries": "^4.0.0",
     "opusscript": "0.0.6",
     "request": "^2.88.0",
