@@ -3,7 +3,7 @@
 global.servers ={};
 const fs = require("fs");
 const path = require("path");
-const Commando = require('discord.js-commando');
+const {CommandoClient} = require('discord.js-commando');
 //var Discord = require('discord.js');
 var winston = require('winston'); // winston is a custom made library
 var auth =  require('./auth.json');
@@ -14,8 +14,9 @@ var rbOpenTimes = require('./WebScraping\\WebScraping.js');
 //var textChnCommands = require('./commandsForBot\\botCommands\\textChannelCommands.js');
 //------- Json files)
 var insults = require('./deadinsults.json');
-//var commandList =require('./commandsForBot\\jsonFiles\\botCommandsJSON.json');
+var commandList =require('./information\\jsonFiles\\botCommandsJSON.json');
 var botInfo = require('./package.json');
+
 var rndNumForIQuotes ;
 var tmpQuote;
 var dilim = "\"";
@@ -28,6 +29,7 @@ var openTimeData;
 var openTimeArr = [];
 var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 var invalidInputCount = 0;
+
 // code used to configure logger settings
 const logger =  winston.createLogger({
   transports:
@@ -51,7 +53,7 @@ const errorLogger = winston.createLogger({
    ]
 })
 async function webScrapingFunc (){
-  await   rbOpenTimes();
+  //await   rbOpenTimes();
   console.log("All scraping complete");
 }
 logger.log('error', "Updated")
@@ -63,11 +65,29 @@ logger.level = 'debug';
 
 // initialize discord bot
 
-var bot = new Commando.Client();
-bot.registry.registerGroup('botcommands', 'botCommands');
-bot.registry.registerDefaults();
-bot.registry.registerCommandsIn('./commandsForBot');
+const bot = new CommandoClient({
+  commandPrefix: '?',
+  owner: auth.IDs.myID,
+  disableEveryone: true,
+  unknownCommandResponse: false
+
+});
+ bot.registry
+   .registerDefaultTypes()
+   .registerGroups([
+     ['misc', 'Misc'],
+     ['music','Music commands'],
+     ['tounement', 'Tournement Commands'],
+     ['redbull', 'Redbull Openingtimes'],
+     ['framedata', 'Framedata commands'],
+     ['patchnotes', 'Patch note commands']
+   ])
+   .registerDefaultGroups()
+   .registerDefaultCommands({help: false})
+	 .registerCommandsIn(path.join(__dirname, 'commandsForBot'));
+
 bot.login(auth.token)
+
 bot.on('ready' , function () {
   logger.info('Connected');
   logger.info('logged in as: ');
@@ -79,62 +99,17 @@ bot.on('ready' , function () {
    //--- gets all the vocie channel IDs for Nakamandem discord
 
 });
+bot.on('error', console.error);
 bot.on('disconnect', function(errMsg, code) {
     console.log(`Disconnected from Discord. Error Code ${code}. Message ${errMsg}.`)
+    if(msg.guild.voiceChannel) msg.guild.voiceConnection.disconnect(); ;
     bot.connect();
 })
 
 //=== TODO: add a fuction to edit user messages in the h channel for Nakamandem to h no matter what is said
 
 bot.on('message', message => {
-  var prefix = message.content.substring(0,1);
-  if(prefix === '?' && message.content.length > 1)
-    {
-      var fullMessage = message.content.substring(1).split(' ');
-      var cmd = fullMessage[0].toLowerCase();
-      var rndNum = Math.floor((Math.random()*12) + 0);
-      var tmpName;
-  // cases used to hold the information for the execution statments
-    //cmd = cmd.toLowerCase();
-//  var personId = ("<@"+ nakaIDs.nakaUserIDs[rndNum] +">");
-    switch(cmd){
-    //== a simple ping pong command
-          case 'ping':
+      if(message.author.bot) return;
+      if (!message.content.startsWith('?')) return;
 
-            console.log("pong");
-            message.channel.send('pong');
-            break;
-          case 'info':
-          //=== bot info
-            message.channel.send("Bot Name: " + botInfo.name + "\n"+
-                                "Bot Version: " + botInfo.version)
-            break;
-          case 'commands':
-          //====== gives list of commands
-            message.channel.send(commandList.commands)
-            break;
-          case 'redbull' :
-            message.channel.send("TO:do no info found")
-            message.channel.send("Never been updated ")
-            break;
-          case 'playMusic' :
-
-
-            break;
-          case 'stopMusic':
-
-          case 'leave' :
-
-            break;
-          default :
-          console.log("invalid input")
-          invalidInputCount++;
-          if(invalidInputCount > 10 ){
-            invalidInputCount =0;
-            message.channel.send("Use ?commands for a list of commands");
-          }
-          break;
-          //====== if no input is detected
-        }
-      }
     });
