@@ -1,32 +1,22 @@
 const { Command } = require('discord.js-commando');
 const YTDL  = require('ytdl-core');
-
-
-function play(msg,server)
+var isPlaying;
+var vConnnection ;
+function play(msg,connection)
 {
   var server = servers[msg.guild.id];
-  if(!server)
-  {
-    server = {queue:[]};
-  }
+  server.dispatcher = connection.playStream(YTDL(server.queue[0] , {filter:"audioonly"}));
+  server.queue.shift();
   if(!server.queue[0])
   {
-    msg.reply("please add songs to the list to use this command")
+     return msg.reply("please add songs to the list to use this command")
   }
-  const dispatcher = server.queue.connection.playArbitraryInput(ytdl(server.queue))
-                .on('end', function musicFinished(){
-                  console.log('music finished playing')
-                  server.queue.shift();
-                  play(msg,server)
-                })
-                .on('error', error =>{
-                  console.log(error);
-                });
-                dispatcher.setVolumeLogarithmic(server.queue.volume /5);
-
+  else{
+    play(msg,connection)
+  }
 };
 
-module.exports = class parrotCommand extends Command {
+module.exports = class playMusicCommand extends Command {
 
     constructor(client) {
         super(client, {
@@ -34,26 +24,40 @@ module.exports = class parrotCommand extends Command {
             group: 'music',
             memberName: 'play',
             description: 'plays music from a search term and plays when in a music channel',
+            guildOnly: true,
             examples: ['music song name']
         });
     }
 
     async run(msg, args){
+
       if(msg.member.voiceChannel){
 
         if(!msg.guild.voiceChannel)
         {
-          var server = servers[msg.guild.id];
-
-          if(!server)
+          if(!servers[msg.guild.id])
           {
-            server = {queue:[]};
+            servers[msg.guild.id] =  {queue:[]};
           }
+          var server = servers[msg.guild.id];
+           msg.member.voiceChannel.join()
+                   .then(connection =>{
+
+                     msg.reply("Joined channel");
+                     if(!args[0]) return msg.reply("Add a search term after ?play [song choice]");
+                     server.queue.push(args);
+                     msg.say("song added");
+                     play(msg, connection);
+                   }).catch(err =>{
+                     console.log(err)
+                   })
+        }
+        else{
+          if(!args[0]) return msg.reply("Add a search term after ?play [song choice]");
+
           server.queue.push(args);
-        await  play(msg, server);
-
-          msg.reply("now playing: ");
-
+          msg.say("song added");
+          //play(msg, connection);
         }
 
       }

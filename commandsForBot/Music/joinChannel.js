@@ -14,10 +14,13 @@ module.exports = class joinChannel extends Command{
 
       if(!msg.guild.voiceChannel)
       {
-        await msg.member.voiceChannel.join()
 
+        await msg.member.voiceChannel.join()
         msg.reply("connection complete use ?play [song] to play music")
 
+      }
+      else{
+        msg.reply("please use ?play [song] to play music when connected")
       }
 
     }

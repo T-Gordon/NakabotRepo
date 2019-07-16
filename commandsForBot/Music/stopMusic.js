@@ -14,7 +14,12 @@ module.exports = class parrotCommand extends Command {
   async run(msg, args) {
       if(msg.guild.voiceConnection)
       {
+        var server = servers[msg.guild.id];
+        if(server.dispatcher)
+        {
 
+          server.dispatcher.end();
+        }
       }
       else {
         msg.say("Please add me to a music bot. use ?join.")

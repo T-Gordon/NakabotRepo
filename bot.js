@@ -1,36 +1,17 @@
 "use strict"
-//----- modules used
-global.servers ={};
+//----- Golbal declarations
+global.servers = {queue: []};
+global.teams = {team1: [], team2:[]};
+global.gConnection;
+//----- modules
+const {CommandoClient} = require('discord.js-commando');
 const fs = require("fs");
 const path = require("path");
-const {CommandoClient} = require('discord.js-commando');
-//var Discord = require('discord.js');
-var winston = require('winston'); // winston is a custom made library
+var winston = require('winston');
 var auth =  require('./auth.json');
-var request = require('request');
-var cheerio = require('cheerio');
 var rbOpenTimes = require('./WebScraping\\WebScraping.js');
-//var voiceChnCommands = require('./commandsForBot\\botCommands\\voiceChannelCommands.js');
-//var textChnCommands = require('./commandsForBot\\botCommands\\textChannelCommands.js');
-//------- Json files)
-var insults = require('./deadinsults.json');
-var commandList =require('./information\\jsonFiles\\botCommandsJSON.json');
-var botInfo = require('./package.json');
 
-var rndNumForIQuotes ;
-var tmpQuote;
-var dilim = "\"";
-var teamSort1 = [ ];
-var teamSort2 = [ ];
-var removed;
-var nakaVoiceChannelIDs = auth.IDs;
-var dankVoiceChannelIDS = auth.IDs;
-var openTimeData;
-var openTimeArr = [];
-var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-var invalidInputCount = 0;
-
-// code used to configure logger settings
+//----- configure logger settings
 const logger =  winston.createLogger({
   transports:
   new winston.transports.Console(),
@@ -39,39 +20,40 @@ const logger =  winston.createLogger({
     winston.format.simple()
   )
 });
-var day = new Date();
-const logFiledir = "logs\\errorLogs: " + days[day.getUTCDay()] + " " + day.getUTCFullYear();
 
+//----- Log File Creation
+var day = new Date();
+const logFiledir = "logs\\errorLogs: ";
 fs.appendFile(logFiledir,day +" Logs" , function er(err){
   if(err)throw err;
   console.log('File Created');
-})
+});
+
 const errorLogger = winston.createLogger({
     transports:[
       new winston.transports.Console(),
       new winston.transports.File({filename: logFiledir})
    ]
-})
-async function webScrapingFunc (){
-  //await   rbOpenTimes();
-  console.log("All scraping complete");
-}
-logger.log('error', "Updated")
-/*logger.remove(logger.transports.Console);
-logger.add(logger.transports.Console,{
-  colorize : true
-});*/
+});
+
+logger.log('error', "Updated");
 logger.level = 'debug';
 
-// initialize discord bot
+//--- Web Scraping check
+async function webScrapingFunc (){
+  await   rbOpenTimes();
+  console.log("All scraping complete");
+};
 
+// initialize discord bot
 const bot = new CommandoClient({
   commandPrefix: '?',
   owner: auth.IDs.myID,
   disableEveryone: true,
   unknownCommandResponse: false
-
 });
+
+// Registers the command folders containing the commands
  bot.registry
    .registerDefaultTypes()
    .registerGroups([
@@ -80,7 +62,8 @@ const bot = new CommandoClient({
      ['tounement', 'Tournement Commands'],
      ['redbull', 'Redbull Openingtimes'],
      ['framedata', 'Framedata commands'],
-     ['patchnotes', 'Patch note commands']
+     ['patchnotes', 'Patch note commands'],
+     ['image', 'Search image commands']
    ])
    .registerDefaultGroups()
    .registerDefaultCommands({help: false})
@@ -90,26 +73,22 @@ bot.login(auth.token)
 
 bot.on('ready' , function () {
   logger.info('Connected');
-  logger.info('logged in as: ');
-  logger.info(botInfo.name + ' - (' + botInfo.version +')');
-  errorLogger.info('info',botInfo.name + ' - (' + botInfo.version +')');
+  logger.info('logged in as:Nakabot');
   webScrapingFunc();
-
-   console.log("bot on")
-   //--- gets all the vocie channel IDs for Nakamandem discord
-
 });
-bot.on('error', console.error);
+
+
 bot.on('disconnect', function(errMsg, code) {
     console.log(`Disconnected from Discord. Error Code ${code}. Message ${errMsg}.`)
     if(msg.guild.voiceChannel) msg.guild.voiceConnection.disconnect(); ;
     bot.connect();
 })
 
-//=== TODO: add a fuction to edit user messages in the h channel for Nakamandem to h no matter what is said
-
 bot.on('message', message => {
       if(message.author.bot) return;
       if (!message.content.startsWith('?')) return;
 
     });
+bot.on('error', err => {
+  console.log(error);
+});
